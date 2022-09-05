@@ -59,8 +59,10 @@ public:
         actionShow_Menu_Bar->setVisible(true);
         actionZoom_In = new QAction(MainWindow);
         actionZoom_In->setObjectName(QString::fromUtf8("actionZoom_In"));
+	  actionZoom_In->setEnabled(false);
         actionZoom_Out = new QAction(MainWindow);
         actionZoom_Out->setObjectName(QString::fromUtf8("actionZoom_Out"));
+	  actionZoom_Out->setEnabled(false);
         actionNext_Image = new QAction(MainWindow);
         actionNext_Image->setObjectName(QString::fromUtf8("actionNext_Image"));
         actionNext_Image->setEnabled(false);

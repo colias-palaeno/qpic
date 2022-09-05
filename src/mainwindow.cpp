@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <cmath>
+
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QPixmap>
@@ -17,6 +19,9 @@ MainWindow::~MainWindow()
 {
     delete ui;
 }
+
+
+int zoom_count = 0;
 
 void MainWindow::on_actionShow_Menu_Bar_toggled(bool checked)
 {
@@ -38,6 +43,8 @@ void MainWindow::render_file(QString* file_path)
 void MainWindow::enable_navigation()
 {
     // used in main.cpp
+    ui->actionZoom_In->setEnabled(true);
+    ui->actionZoom_Out->setEnabled(true);
     ui->actionNext_Image->setEnabled(true);
     ui->actionPrevious_Image->setEnabled(true);
 }
@@ -78,8 +85,12 @@ void MainWindow::navigate_dir(bool next)
     int idx = images.indexOf(*file_name) + (next ? 1 : -1);
     delete file_name;
 
-    if (images.size() > idx && idx > (next ? 0 : -1))
-        render_file(new QString(*file_dir + images[idx]));
+    if (idx == images.size())
+        idx = 0;
+    else if (idx == -1)
+        idx = images.size() - 1;
+
+    render_file(new QString(*file_dir + images[idx]));
 }
 
 void MainWindow::on_actionNext_Image_triggered()
@@ -92,12 +103,22 @@ void MainWindow::on_actionPrevious_Image_triggered()
     navigate_dir(false);
 }
 
-void MainWindow::zoom(float sf)
+void MainWindow::zoom(bool zooming_in)
 {
+    if (abs(zoom_count) > 5 && zooming_in == (zoom_count > 0))
+        return;
     auto* label = ui->label;
-    auto dims = QSize(label->pixmap().width() * sf, label->pixmap().height() * sf);
+    zoom_count += zooming_in ? 1 : -1;
+    auto* sf = new double(pow(1.25, zoom_count));
 
-    label->setPixmap(label->pixmap().scaled(dims, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    auto* current_file = new QPixmap(QPixmap::fromImage(QImage(windowTitle())));
+    auto dims = QSize(current_file->width() * *sf, current_file->height() * *sf);
+
+    delete sf;
+
+    label->setPixmap(current_file->scaled(dims));
+    delete current_file;
+
     label->resize(dims);
 
     setMaximumSize(dims);
@@ -106,10 +127,10 @@ void MainWindow::zoom(float sf)
 
 void MainWindow::on_actionZoom_In_triggered()
 {
-    zoom(1.25);
+    zoom(true);
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    zoom(0.8);
+    zoom(false);
 }

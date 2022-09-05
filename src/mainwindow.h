@@ -33,7 +33,7 @@ private slots:
 
     void on_actionPrevious_Image_triggered();
 
-    void zoom(float sf);
+    void zoom(bool zooming_in);
 
     void on_actionZoom_In_triggered();
 
