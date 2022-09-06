@@ -20,9 +20,6 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
-int zoom_count = 0;
-
 void MainWindow::on_actionShow_Menu_Bar_toggled(bool checked)
 {
     ui->menuBar->setVisible(checked);
@@ -31,13 +28,16 @@ void MainWindow::on_actionShow_Menu_Bar_toggled(bool checked)
 void MainWindow::render_file(QString* file_path)
 {
     setWindowTitle(*file_path);
-    auto file = std::make_unique<QImage>(*file_path);
+    auto file = std::make_unique<QPixmap>(*file_path);
     delete file_path;
 
-    setMaximumSize(QSize(file->width(), file->height()+20));
-    resize(file->width(), file->height()+20);
-    ui->label->resize(file->width(), file->height()+20);
-    ui->label->setPixmap(QPixmap::fromImage(*file));
+    auto* dims = new QSize(file->width(), file->height()+20);
+    setMaximumSize(*dims);
+    resize(*dims);
+    ui->label->resize(*dims);
+
+    delete dims;
+    ui->label->setPixmap(*file);
 }
 
 void MainWindow::enable_navigation()
@@ -55,7 +55,7 @@ void MainWindow::on_actionOpen_triggered()
         this,
         tr("Open Image"),
         "/",
-        tr("Image Files (*.png *.jpg *.bmp)")
+        tr("Image Files (*.bmp *.gif *.png *.jpg)")
     ));
 
     if (*file_path == "") {
@@ -103,24 +103,26 @@ void MainWindow::on_actionPrevious_Image_triggered()
     navigate_dir(false);
 }
 
+int zoom_count = 0;
+
 void MainWindow::zoom(bool zooming_in)
 {
     if (abs(zoom_count) > 5 && zooming_in == (zoom_count > 0))
         return;
-    auto* label = ui->label;
+
     zoom_count += zooming_in ? 1 : -1;
+
+    auto* current_file = new QPixmap(windowTitle());
     auto* sf = new double(pow(1.25, zoom_count));
-
-    auto* current_file = new QPixmap(QPixmap::fromImage(QImage(windowTitle())));
     auto dims = QSize(current_file->width() * *sf, current_file->height() * *sf);
-
     delete sf;
+
+    auto* label = ui->label;
 
     label->setPixmap(current_file->scaled(dims));
     delete current_file;
 
     label->resize(dims);
-
     setMaximumSize(dims);
     resize(dims);
 }
