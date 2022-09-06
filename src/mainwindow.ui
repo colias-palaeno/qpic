@@ -23,7 +23,7 @@
    <string>qImg</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="main.qrc">
+   <iconset>
     <normaloff>:/src/icon.ico</normaloff>:/src/icon.ico</iconset>
   </property>
   <property name="tabShape">
@@ -52,7 +52,7 @@
      <string/>
     </property>
     <property name="pixmap">
-     <pixmap resource="main.qrc">:/src/qimg.png</pixmap>
+     <pixmap resource="main.qrc">:/qrc/qpic.png</pixmap>
     </property>
     <property name="alignment">
      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>

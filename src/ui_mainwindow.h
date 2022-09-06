@@ -77,7 +77,7 @@ public:
         label->setFrameShape(QFrame::NoFrame);
         label->setFrameShadow(QFrame::Plain);
         label->setLineWidth(0);
-        label->setPixmap(QPixmap(QString::fromUtf8(":/src/qimg.png")));
+        label->setPixmap(QPixmap(QString::fromUtf8(":/qrc/qpic.png")));
         label->setAlignment(Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop);
         MainWindow->setCentralWidget(centralwidget);
         menuBar = new QMenuBar(MainWindow);
@@ -108,7 +108,7 @@ public:
 
     void retranslateUi(QMainWindow *MainWindow)
     {
-        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "qImg", nullptr));
+        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "qPic", nullptr));
         actionOpen->setText(QCoreApplication::translate("MainWindow", "Open", nullptr));
 #if QT_CONFIG(shortcut)
         actionOpen->setShortcut(QCoreApplication::translate("MainWindow", "Ctrl+O", nullptr));

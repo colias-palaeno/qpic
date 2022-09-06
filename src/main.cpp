@@ -7,7 +7,7 @@
 
 struct Viewer : public QWidget
 {
-    explicit Viewer(QWidget* parent = nullptr) :
+    explicit Viewer(QWidget *parent = nullptr) :
         QWidget(parent)
     {
         auto* label = new QLabel();
@@ -16,7 +16,7 @@ struct Viewer : public QWidget
     }
 };
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QCommandLineParser parser;
