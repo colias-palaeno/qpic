@@ -9,7 +9,9 @@ qPic is an image viewer. In comparison with IrfanView, one of the most popular c
 
 ## Screenshots
 Windows:
+
 ![](screenshot.png)
 
 Xfce (Linux):
+
 ![](screenshot_xfce.png)
