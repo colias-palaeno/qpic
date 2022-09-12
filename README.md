@@ -12,6 +12,6 @@ Windows:
 
 ![](screenshot.png)
 
-Xfce (Linux):
+Xfce (Dracula):
 
 ![](screenshot_xfce.png)
