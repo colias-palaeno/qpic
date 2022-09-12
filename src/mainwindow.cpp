@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include <cmath>
+#include <QtMath>
 
 #include <QFileInfo>
 #include <QFileDialog>
@@ -25,10 +25,35 @@ void MainWindow::on_actionShow_Menu_Bar_toggled(bool checked)
     ui->menuBar->setVisible(checked);
 }
 
+int zoom_count = 0;
+
+void MainWindow::zoom(bool change_zoom, bool zooming_in)
+{
+    if (change_zoom) {
+        if (abs(zoom_count) > 5 && zooming_in == (zoom_count > 0))
+            return;
+
+        zoom_count += zooming_in ? 1 : -1;
+    }
+
+    auto* current_file = new QPixmap(windowTitle());
+    double sf = qPow(1.25, zoom_count);
+    auto dims = QSize(current_file->width() * sf, current_file->height() * sf);
+
+    auto* label = ui->label;
+
+    label->setPixmap(current_file->scaled(dims, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    delete current_file;
+
+    label->resize(dims);
+    setMaximumSize(dims);
+    resize(dims);
+}
+
 void MainWindow::render_file(QString* file_path)
 {
     setWindowTitle(*file_path);
-    auto file = std::make_unique<QPixmap>(*file_path);
+    auto file = new QPixmap(*file_path);
     delete file_path;
 
     auto* dims = new QSize(file->width(), file->height()+20);
@@ -38,6 +63,10 @@ void MainWindow::render_file(QString* file_path)
 
     delete dims;
     ui->label->setPixmap(*file);
+
+    delete file;
+
+    zoom(false, true);
 }
 
 void MainWindow::enable_navigation()
@@ -82,6 +111,12 @@ void MainWindow::navigate_dir(bool next)
     QStringList images = dir->entryList();
     delete dir;
 
+    if (images.size() == 1) {
+        ui->actionNext_Image->setEnabled(false);
+        ui->actionPrevious_Image->setEnabled(false);
+        return;
+    }
+
     int idx = images.indexOf(*file_name) + (next ? 1 : -1);
     delete file_name;
 
@@ -103,36 +138,12 @@ void MainWindow::on_actionPrevious_Image_triggered()
     navigate_dir(false);
 }
 
-int zoom_count = 0;
-
-void MainWindow::zoom(bool zooming_in)
-{
-    if (abs(zoom_count) > 5 && zooming_in == (zoom_count > 0))
-        return;
-
-    zoom_count += zooming_in ? 1 : -1;
-
-    auto* current_file = new QPixmap(windowTitle());
-    auto* sf = new double(pow(1.25, zoom_count));
-    auto dims = QSize(current_file->width() * *sf, current_file->height() * *sf);
-    delete sf;
-
-    auto* label = ui->label;
-
-    label->setPixmap(current_file->scaled(dims));
-    delete current_file;
-
-    label->resize(dims);
-    setMaximumSize(dims);
-    resize(dims);
-}
-
 void MainWindow::on_actionZoom_In_triggered()
 {
-    zoom(true);
+    zoom(true, true);
 }
 
 void MainWindow::on_actionZoom_Out_triggered()
 {
-    zoom(false);
+    zoom(true, false);
 }
