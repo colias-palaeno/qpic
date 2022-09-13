@@ -23,6 +23,11 @@ MainWindow::~MainWindow()
 void MainWindow::on_actionShow_Menu_Bar_toggled(bool checked)
 {
     ui->menuBar->setVisible(checked);
+
+    auto dims = QSize(this->width(), this->height() + (checked ? 20 : -20));
+    ui->label->resize(dims);
+    setMaximumSize(dims);
+    resize(dims);
 }
 
 int zoom_count = 0;
@@ -45,6 +50,7 @@ void MainWindow::zoom(bool change_zoom, bool zooming_in)
     label->setPixmap(current_file->scaled(dims, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     delete current_file;
 
+    dims.setHeight(dims.height() + (ui->menuBar->isVisible() ? 20 : 0));
     label->resize(dims);
     setMaximumSize(dims);
     resize(dims);
@@ -56,7 +62,7 @@ void MainWindow::render_file(QString* file_path)
     auto file = new QPixmap(*file_path);
     delete file_path;
 
-    auto* dims = new QSize(file->width(), file->height()+20);
+    auto* dims = new QSize(file->width(), file->height() + (ui->menuBar->isVisible() ? 20 : 0));
     setMaximumSize(*dims);
     resize(*dims);
     ui->label->resize(*dims);
@@ -84,7 +90,7 @@ void MainWindow::on_actionOpen_triggered()
         this,
         tr("Open Image"),
         "/",
-        tr("Image Files (*.bmp *.gif *.png *.jpg)")
+        tr("Image Files (*.bmp *.gif *.jpg *.jpeg *.png)")
     ));
 
     if (*file_path == "") {
@@ -106,7 +112,7 @@ void MainWindow::navigate_dir(bool next)
     delete file_path;
 
     QDir* dir = new QDir(*file_dir);
-    dir->setNameFilters({"*.jpg", "*.jpeg", "*.png"});
+    dir->setNameFilters({"*.bmp", "*.gif", "*.jpg", "*.jpeg", "*.png"});
 
     QStringList images = dir->entryList();
     delete dir;
