@@ -24,7 +24,7 @@ void MainWindow::on_actionShow_Menu_Bar_toggled(bool checked)
 {
     ui->menuBar->setVisible(checked);
 
-    auto dims = new QSize(this->width(), this->height() + (checked ? 24 : -24));
+    auto dims = std::make_unique<QSize>(this->width(), this->height() + (checked ? 24 : -24));
     ui->label->resize(*dims);
     setMaximumSize(*dims);
     resize(*dims);
@@ -42,12 +42,13 @@ void MainWindow::zoom(bool change_zoom, bool zooming_in)
     }
 
     auto current_file = new QPixmap(windowTitle());
-    double sf = qPow(1.25, zoom_count);
-    auto dims = new QSize(
-        current_file->width() * sf,
-        current_file->height() * sf + (ui->menuBar->isVisible() ? 24 : 0)
+    auto sf = new double(qPow(1.25, zoom_count));
+    auto dims = std::make_unique<QSize>(
+        current_file->width() * *sf,
+        current_file->height() * *sf + (ui->menuBar->isVisible() ? 24 : 0)
     );
 
+    delete sf;
     auto label = ui->label;
 
     label->setPixmap(current_file->scaled(*dims, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
