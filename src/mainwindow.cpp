@@ -20,14 +20,19 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_actionShow_Menu_Bar_toggled(bool checked)
+void MainWindow::resize_image(QSize* dims)
 {
-    ui->menuBar->setVisible(checked);
-
-    auto dims = std::make_unique<QSize>(this->width(), this->height() + (checked ? 24 : -24));
     ui->label->resize(*dims);
     setMaximumSize(*dims);
     resize(*dims);
+
+    delete dims;
+}
+
+void MainWindow::on_actionShow_Menu_Bar_toggled(bool checked)
+{
+    ui->menuBar->setVisible(checked);
+    resize_image(new QSize(this->width(), this->height() + (checked ? 24 : -24)));
 }
 
 int zoom_count = 0;
@@ -43,20 +48,16 @@ void MainWindow::zoom(bool change_zoom, bool zooming_in)
 
     auto current_file = new QPixmap(windowTitle());
     auto sf = new double(qPow(1.25, zoom_count));
-    auto dims = std::make_unique<QSize>(
+    auto dims = new QSize(
         current_file->width() * *sf,
         current_file->height() * *sf + (ui->menuBar->isVisible() ? 24 : 0)
     );
 
     delete sf;
-    auto label = ui->label;
+    ui->label->setPixmap(current_file->scaled(*dims, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
-    label->setPixmap(current_file->scaled(*dims, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     delete current_file;
-
-    label->resize(*dims);
-    setMaximumSize(*dims);
-    resize(*dims);
+    resize_image(dims);
 }
 
 void MainWindow::render_file(QString* file_path)
@@ -65,16 +66,10 @@ void MainWindow::render_file(QString* file_path)
     auto file = new QPixmap(*file_path);
     delete file_path;
 
-    auto dims = new QSize(file->width(), file->height() + (ui->menuBar->isVisible() ? 24 : 0));
-    setMaximumSize(*dims);
-    resize(*dims);
-    ui->label->resize(*dims);
-
-    delete dims;
     ui->label->setPixmap(*file);
+    resize_image(new QSize(file->width(), file->height() + (ui->menuBar->isVisible() ? 24 : 0)));
 
     delete file;
-
     zoom(false, true);
 }
 
@@ -118,24 +113,26 @@ void MainWindow::navigate_dir(bool next)
     dir->setNameFilters({"*.bmp", "*.gif", "*.jpg", "*.jpeg", "*.png"});
     dir->setSorting((ui->actionName->isChecked()) ? QDir::Name : QDir::Time);
 
-    QStringList images = dir->entryList();
+    auto images = std::make_unique<QStringList>(dir->entryList());
     delete dir;
 
-    if (images.size() == 1) {
-        ui->actionNext_Image->setEnabled(false);
-        ui->actionPrevious_Image->setEnabled(false);
-        return;
-    }
-
-    int idx = images.indexOf(*file_name) + (next ? 1 : -1);
+    int idx = images->indexOf(*file_name) + (next ? 1 : -1);
+    auto size = new long long int(images->size());
     delete file_name;
 
-    if (idx == images.size())
-        idx = 0;
-    else if (idx == -1)
-        idx = images.size() - 1;
+    if (*size == 1) {
+        ui->actionNext_Image->setEnabled(false);
+        ui->actionPrevious_Image->setEnabled(false);
+        delete size; return;
+    }
 
-    render_file(new QString(*file_dir + images[idx]));
+    if (idx == *size)
+        idx = 0;
+    else if (*size == -1)
+        idx = images->size() - 1;
+
+    delete size;
+    render_file(new QString(*file_dir + (*images)[idx]));
 }
 
 void MainWindow::on_actionNext_Image_triggered()
@@ -177,4 +174,3 @@ void MainWindow::on_actionName_triggered()
 {
     toggle_sort(false);
 }
-
