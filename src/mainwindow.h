@@ -39,6 +39,12 @@ private slots:
 
     void on_actionZoom_Out_triggered();
 
+    void toggle_sort(bool date);
+
+    void on_actionDate_triggered();
+
+    void on_actionName_triggered();
+
 private:
     Ui::MainWindow *ui;
 };

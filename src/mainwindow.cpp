@@ -24,10 +24,10 @@ void MainWindow::on_actionShow_Menu_Bar_toggled(bool checked)
 {
     ui->menuBar->setVisible(checked);
 
-    auto dims = QSize(this->width(), this->height() + (checked ? 20 : -20));
-    ui->label->resize(dims);
-    setMaximumSize(dims);
-    resize(dims);
+    auto dims = new QSize(this->width(), this->height() + (checked ? 24 : -24));
+    ui->label->resize(*dims);
+    setMaximumSize(*dims);
+    resize(*dims);
 }
 
 int zoom_count = 0;
@@ -41,19 +41,21 @@ void MainWindow::zoom(bool change_zoom, bool zooming_in)
         zoom_count += zooming_in ? 1 : -1;
     }
 
-    auto* current_file = new QPixmap(windowTitle());
+    auto current_file = new QPixmap(windowTitle());
     double sf = qPow(1.25, zoom_count);
-    auto dims = QSize(current_file->width() * sf, current_file->height() * sf);
+    auto dims = new QSize(
+        current_file->width() * sf,
+        current_file->height() * sf + (ui->menuBar->isVisible() ? 24 : 0)
+    );
 
-    auto* label = ui->label;
+    auto label = ui->label;
 
-    label->setPixmap(current_file->scaled(dims, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    label->setPixmap(current_file->scaled(*dims, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     delete current_file;
 
-    dims.setHeight(dims.height() + (ui->menuBar->isVisible() ? 20 : 0));
-    label->resize(dims);
-    setMaximumSize(dims);
-    resize(dims);
+    label->resize(*dims);
+    setMaximumSize(*dims);
+    resize(*dims);
 }
 
 void MainWindow::render_file(QString* file_path)
@@ -62,7 +64,7 @@ void MainWindow::render_file(QString* file_path)
     auto file = new QPixmap(*file_path);
     delete file_path;
 
-    auto* dims = new QSize(file->width(), file->height() + (ui->menuBar->isVisible() ? 20 : 0));
+    auto dims = new QSize(file->width(), file->height() + (ui->menuBar->isVisible() ? 24 : 0));
     setMaximumSize(*dims);
     resize(*dims);
     ui->label->resize(*dims);
@@ -86,7 +88,7 @@ void MainWindow::enable_navigation()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    auto* file_path = new QString(QFileDialog::getOpenFileName(
+    auto file_path = new QString(QFileDialog::getOpenFileName(
         this,
         tr("Open Image"),
         "/",
@@ -105,14 +107,15 @@ void MainWindow::on_actionOpen_triggered()
 void MainWindow::navigate_dir(bool next)
 {
     // setting this in the MainWindow namespace to easily resize the window. I did this with the zoom function too
-    auto* file_path = new QString(windowTitle());
-    auto* file_name = new QString(QFileInfo(*file_path).fileName());
+    auto file_path = new QString(windowTitle());
+    auto file_name = new QString(QFileInfo(*file_path).fileName());
     auto file_dir = std::make_shared<QString>(file_path->remove(*file_name));
 
     delete file_path;
 
-    QDir* dir = new QDir(*file_dir);
+    auto dir = new QDir(*file_dir);
     dir->setNameFilters({"*.bmp", "*.gif", "*.jpg", "*.jpeg", "*.png"});
+    dir->setSorting((ui->actionName->isChecked()) ? QDir::Name : QDir::Time);
 
     QStringList images = dir->entryList();
     delete dir;
@@ -153,3 +156,24 @@ void MainWindow::on_actionZoom_Out_triggered()
 {
     zoom(true, false);
 }
+
+void MainWindow::toggle_sort(bool date)
+{
+    ui->actionDate->setEnabled(!date);
+    ui->actionDate->setChecked(date);
+
+    ui->actionName->setEnabled(date);
+    ui->actionName->setChecked(!date);
+}
+
+void MainWindow::on_actionDate_triggered()
+{
+    toggle_sort(true);
+}
+
+
+void MainWindow::on_actionName_triggered()
+{
+    toggle_sort(false);
+}
+
